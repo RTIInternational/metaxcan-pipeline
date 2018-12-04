@@ -58,4 +58,4 @@ merged <- rename(merged,c("rsid_dbSNP150"="SNP"))
 merged <- subset(merged, select=c(SNP, A1, A2, BETA, StdErr, P))
 
 # Write out merged, renamed table to output file
-write.table(merged, file=out_file, col.names=TRUE, row.names=FALSE)
+write.table(merged, file=out_file, col.names=TRUE, row.names=FALSE, quote=FALSE)

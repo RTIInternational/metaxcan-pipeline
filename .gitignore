@@ -76,4 +76,4 @@ docs/_build/
 _build
 
 # PyBuilder
-target/
+target/.DS_Store

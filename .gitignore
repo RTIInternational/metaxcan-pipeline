@@ -76,4 +76,9 @@ docs/_build/
 _build
 
 # PyBuilder
-target/.DS_Store
+target/
+.DS_Store
+
+# Prevent accidentally adding large datasets to git
+test/data/large_data/
+

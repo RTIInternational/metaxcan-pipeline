@@ -1,0 +1,11 @@
+gxg_meta_analysis_file:
+    class: File
+    location: /Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/large_data/20181108_ftnd_meta_analysis_wave3.eur.chr22.exclude_singletons.1df.gz
+legend_file_1000g:
+    class: File
+    location: /Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/large_data/1000GP_Phase3_chr22.legend.gz
+gtex_variant_file:
+    class: File
+    location: /Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/large_data/gtex_v7_hapmapceu_dbsnp150_snp_annot.txt
+output_base: "test_output_file"
+chr: 22

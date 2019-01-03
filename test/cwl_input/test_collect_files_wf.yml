@@ -1,0 +1,7 @@
+input_files: [
+    {class: File,
+    location: /Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/test_collect_files_wf/test_file_1.txt},
+    {class: File,
+    location: /Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/test_collect_files_wf/test_file_2.txt}
+]
+output_dir_name: processed_metaxcan_input

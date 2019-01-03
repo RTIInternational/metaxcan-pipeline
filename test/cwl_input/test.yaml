@@ -1,0 +1,83 @@
+class: Workflow
+cwlVersion: v1.0
+id: parallel_metaxcan_preprocessing
+label: parallel_metaxcan_preprocessing
+$namespaces:
+  sbg: 'https://www.sevenbridges.com/'
+
+inputs:
+  - id: gxg_meta_analysis_file
+    type: File[]
+  - id: legend_file_1000g
+    type: File[]
+  - id: gtex_variant_file
+    type: File
+  - id: chr
+    type: int[]
+  - id: output_base
+    type: string
+
+outputs:
+  - id: metaxcan_ready_output_file
+    outputSource:
+      - preprocess_metaxcan/metaxcan_ready_output_file
+    type: File[]
+
+steps:
+ 
+ - id: generate_output_basenames
+    class: ExpressionTool
+    inputs:
+      - id: output_base
+        type: string
+      - id: chr
+        type: 'int[]'
+        
+    outputs:
+      - id: output_basenames
+        type: 'string[]'
+        
+    expression: >
+        ${
+            var ret = [];
+            for (var i = 0; i < inputs.chr.length; ++i) {
+                ret.push(inputs.output_base+".chr"+inputs.chr[i])
+            }
+            return { 'output_basenames' : ret }
+        }
+    in:
+      - id: output_base
+        source: output_base
+      - id: chr
+        source: chr
+    out:
+      - id: output_basenames
+        
+  - id: preprocess_metaxcan
+    in:
+      - id: gxg_meta_analysis_file
+        source: gxg_meta_analysis_file
+      - id: gtex_variant_file
+        source: gtex_variant_file
+      - id: legend_file_1000g
+        source: legend_file_1000g
+      - id: chr
+        source: chr
+      - id: output_base
+        source: generate_output_basenames/output_basenames
+    out:
+      - id: metaxcan_ready_output_file
+    run: ../tools/preprocess_metaxcan.cwl
+    label: preprocess_metaxcan
+    scatter:
+      - gxg_meta_analysis_file
+      - legend_file_1000g
+      - chr
+      - output_base
+    scatterMethod: dotproduct
+    'sbg:x': -286
+    'sbg:y': -186
+requirements:
+  - class: InlineJavascriptRequirement
+  - class: StepInputExpressionRequirement
+  - class: ScatterFeatureRequirement

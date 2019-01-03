@@ -1,0 +1,7 @@
+input_files: [
+    {class: File,
+    location: /Users/awaldrop/test_output_file.chr21.txt.gz},
+    {class: File,
+    location: /Users/awaldrop/test_output_file.chr22.txt.gz}
+]
+output_dir_name: processed_metaxcan_input

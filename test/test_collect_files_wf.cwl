@@ -1,7 +1,7 @@
 class: Workflow
 cwlVersion: v1.0
-id: test_collect_files
-label: test_collect_files
+id: test_collect_files_wf
+label: test_collect_files_wf
 $namespaces:
   sbg: 'https://www.sevenbridges.com/'
 inputs:
@@ -30,7 +30,7 @@ steps:
         source: output_dir_name
     out:
       - id: output_dir
-    run: ../tools/pack_files.cwl
+    run: ../tools/collect_files.cwl
     label: pack_files
     'sbg:x': -196.796875
     'sbg:y': -148

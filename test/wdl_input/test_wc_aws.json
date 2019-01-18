@@ -1,0 +1,3 @@
+{
+  "test.wc.in_file" : "s3://clustername--files/gtex_v7_hapmapceu_dbsnp150_snp_annot.txt"
+}

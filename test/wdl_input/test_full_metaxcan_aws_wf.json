@@ -1,0 +1,23 @@
+{
+  "metaxcan_metamany_wf.gtex_variant_file": "s3://clustername--files/gtex_v7_hapmapceu_dbsnp150_snp_annot.txt",
+  "metaxcan_metamany_wf.legend_files_1000g": [
+  	"s3://rti-common/ref_panels/1000G/impute_format/1000g_phase3/1000GP_Phase3_chr21.legend.gz",
+    "s3://clustername--files/1000GP_Phase3_chr22.legend.gz"
+    ],
+  "metaxcan_metamany_wf.gxg_meta_analysis_files": [
+  	"s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr21.exclude_singletons.1df.gz",
+    "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr22.exclude_singletons.1df.gz"
+    ],
+  "metaxcan_metamany_wf.output_base": "test_output_file",
+  "metaxcan_metamany_wf.chrs": [21,22],
+
+  "metaxcan_metamany_wf.pvalue_column": "P",
+  "metaxcan_metamany_wf.effect_allele_column": "A1",
+  "metaxcan_metamany_wf.model_db_files": ["s3://clustername--files/gtex_v7_Brain_Amygdala_imputed_europeans_tw_0.5_signif.db", "s3://clustername--files/gtex_v7_Brain_Anterior_cingulate_cortex_BA24_imputed_europeans_tw_0.5_signif.db"],
+  "metaxcan_metamany_wf.beta_column": "BETA",
+  "metaxcan_metamany_wf.non_effect_allele_column": "A2",
+  "metaxcan_metamany_wf.model_db_glob_patterns": ["*.db"],
+  "metaxcan_metamany_wf.snp_column": "SNP",
+  "metaxcan_metamany_wf.se_column": "StdErr",
+  "metaxcan_metamany_wf.covariance_files": ["s3://clustername--files/gtex_v7_Brain_Amygdala_imputed_europeans_tw_0.5_signif.db.txt.gz", "s3://clustername--files/gtex_v7_Brain_Anterior_cingulate_cortex_BA24_imputed_europeans_tw_0.5_signif.db.txt.gz"]
+}

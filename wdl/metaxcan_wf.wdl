@@ -74,10 +74,34 @@ task count_results {
     }
     output{
         # Count number of records by subtracting out header line for each file
-        Int num_results = read_int(stdout()) - length(input_files)
+        Int num_results = read_int(stdout())
     }
     runtime {
         docker: "ubuntu:18.04"
+        cpu: "1"
+        memory: "1 GB"
+    }
+}
+
+task adj_csv_pvalue{
+    File input_file
+    String pvalue_colname
+    String? method
+    Float? filter_threshold
+    Int? num_comparisons
+    String output_file_base = basename(input_file, ".csv")
+    File output_file = "${output_file_base}.p_adjusted.csv"
+    command {
+        Rscript /opt/code_docker_lib/adjust_csv_pvalue.R --input_file ${input_file} \
+            --output_file ./${output_file} \
+            --pvalue_colname ${pvalue_colname} ${"--method " +  method} ${"--n " + num_comparisons} ${"--filter_threshold " + filter_threshold}
+    }
+    output{
+        # Count number of records by subtracting out header line for each file
+        File adj_output_file = "${output_file}"
+    }
+    runtime {
+        docker: "alexwaldrop/adjust_csv_pvalue:0a8448a04115f522bf112de088c6bc9ce363b442"
         cpu: "1"
         memory: "1 GB"
     }
@@ -102,6 +126,10 @@ workflow metaxcan_wf {
     String beta_column
     String pvalue_column
     String se_column
+
+    # Inputs for p-value adjusting
+    String pvalue_colname = "pvalue"
+    Float adj_pvalue_filter_threshold = 0.5
 
     # Scatter parallel processing by chromosome
     scatter (chr_index in range(length(chrs))){
@@ -141,15 +169,30 @@ workflow metaxcan_wf {
         }
     }
 
-        # Count number of results for p-value adjusting
+    # Count number Gene/Tissue pvalues across metaxcan results for adjusting pvalues
     call count_results{
         input:
             input_files = metaxcan.metaxcan_output
     }
 
+    # Adjust metaxcan results pvalues for multiple comparisons and filter out results above threshold
+    scatter (metaxcan_output in metaxcan.metaxcan_output){
+        # Total number of comparisons across all metaxcan output files
+        Int num_comparisons = count_results.num_results - length(model_db_files)
+        call adj_csv_pvalue{
+            input:
+                input_file = metaxcan_output,
+                pvalue_colname = pvalue_colname,
+                num_comparisons = num_comparisons,
+                filter_threshold = adj_pvalue_filter_threshold
+        }
+
+    }
+
     output{
-        Array[File] metamany_output = metaxcan.metaxcan_output
+        Array[File] metaxcan_output = metaxcan.metaxcan_output
         Int num_results = count_results.num_results
+        Array[File] adj_metaxcan_output = adj_csv_pvalue.adj_output_file
     }
 
 }

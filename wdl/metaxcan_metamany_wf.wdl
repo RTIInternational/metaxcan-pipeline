@@ -84,7 +84,7 @@ task count_results {
     }
     output{
         # Count number of records by subtracting out header line for each file
-        Int num_results = read_int(stdout()) - length(input_files)
+        Int num_results = read_int(stdout())
     }
     runtime {
         docker: "ubuntu:18.04"

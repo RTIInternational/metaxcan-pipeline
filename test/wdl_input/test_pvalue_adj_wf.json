@@ -1,0 +1,5 @@
+{
+  "test_adj_csv_pvalue.adj_csv_pvalue.pvalue_colname": "pvalue",
+  "test_adj_csv_pvalue.adj_csv_pvalue.input_file": "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/36bad53d-c5a4-4906-b7a3-9e4a24641bf6/call-metaxcan/shard-0/gtex_v7_Brain_Amygdala_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+  "test_adj_csv_pvalue.adj_csv_pvalue.filter_threshold": "0.35"
+}

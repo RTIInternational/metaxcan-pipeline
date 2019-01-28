@@ -1,5 +1,6 @@
 {
   "##_COMMENT1": "META-ANALYSIS INPUTS",
+  "metaxcan_wf.adj_pvalue_filter_threshold" : 0.75,
   "metaxcan_wf.gxg_meta_analysis_files": [
     "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr1.exclude_singletons.1df.gz",
     "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr2.exclude_singletons.1df.gz",

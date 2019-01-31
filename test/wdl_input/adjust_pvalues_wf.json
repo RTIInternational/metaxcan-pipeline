@@ -1,0 +1,25 @@
+{
+  "##_COMMENT1": "META-ANALYSIS INPUTS",
+  "adj_csv_pvalue_wf.adj_pvalue_filter_threshold" : 0.15,
+  "adj_csv_pvalue_wf.pvalue_colname" : "pvalue",
+  "adj_csv_pvalue_wf.pvalue_adj_method" : "fdr",
+  "adj_csv_pvalue_wf.final_output_basename": "metxcan_results_holm_within_tissue_0.15",
+  "adj_csv_pvalue_wf.input_files":
+          [
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-0/gtex_v7_Brain_Amygdala_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-1/gtex_v7_Brain_Anterior_cingulate_cortex_BA24_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-2/gtex_v7_Brain_Caudate_basal_ganglia_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-3/gtex_v7_Brain_Cerebellar_Hemisphere_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-4/gtex_v7_Brain_Cerebellum_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-5/gtex_v7_Brain_Cortex_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-6/gtex_v7_Brain_Frontal_Cortex_BA9_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-7/gtex_v7_Brain_Hippocampus_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-8/gtex_v7_Brain_Hypothalamus_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-9/gtex_v7_Brain_Nucleus_accumbens_basal_ganglia_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-10/gtex_v7_Brain_Putamen_basal_ganglia_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-11/gtex_v7_Brain_Spinal_cord_cervical_c-1_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+            "s3://rti-cromwell-output/cromwell-execution/metaxcan_wf/147d93a4-1e97-46d9-9881-1c3983fa85e3/call-metaxcan/shard-12/gtex_v7_Brain_Substantia_nigra_imputed_europeans_tw_0.5_signif.metaxcan_results.csv"
+          ]
+}
+
+

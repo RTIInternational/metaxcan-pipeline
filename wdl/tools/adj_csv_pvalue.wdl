@@ -16,7 +16,7 @@ task adj_csv_pvalue{
         File adj_output_file = "${output_file}"
     }
     runtime {
-        docker: "alexwaldrop/adjust_csv_pvalue:0a8448a04115f522bf112de088c6bc9ce363b442"
+        docker: "alexwaldrop/adjust_csv_pvalue:122f10e0b18706d61ab76ba7d5f44eca2581c92a"
         cpu: "1"
         memory: "1 GB"
     }

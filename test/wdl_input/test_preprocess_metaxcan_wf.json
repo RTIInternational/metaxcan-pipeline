@@ -1,7 +1,0 @@
-{
-  "metaxcan_metamany_wf.gtex_variant_file": "/Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/large_data/gtex_v7_hapmapceu_dbsnp150_snp_annot.txt",
-  "metaxcan_metamany_wf.legend_files_1000g": ["/Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/large_data/1000GP_Phase3_chr21.legend.gz", "/Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/large_data/1000GP_Phase3_chr22.legend.gz"],
-  "metaxcan_metamany_wf.gxg_meta_analysis_files": ["/Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/large_data/20181108_ftnd_meta_analysis_wave3.eur.chr21.exclude_singletons.1df.gz", "/Users/awaldrop/PycharmProjects/metaxcan-pipeline/test/data/large_data/20181108_ftnd_meta_analysis_wave3.eur.chr22.exclude_singletons.1df.gz"],
-  "metaxcan_metamany_wf.output_base": "test_output_file",
-  "metaxcan_metamany_wf.chrs": [21,22]
-}

@@ -1,7 +1,7 @@
-import "metaxcan-pipeline/wdl/tools/metaxcan_preprocessing.wdl" as PREPROCESSING
-import "metaxcan-pipeline/wdl/tools/metaxcan.wdl" as METAXCAN
-import "metaxcan-pipeline/wdl/tools/adj_csv_pvalue.wdl" as ADJPVALUES
-import "metaxcan-pipeline/wdl/tools/utilities.wdl" as UTIL
+import "metaxcan-pipeline/workflow/tasks/metaxcan_preprocessing.wdl" as PREPROCESSING
+import "metaxcan-pipeline/workflow/tasks/metaxcan.wdl" as METAXCAN
+import "metaxcan-pipeline/workflow/tasks/adj_csv_pvalue.wdl" as ADJPVALUES
+import "metaxcan-pipeline/workflow/tasks/utilities.wdl" as UTIL
 
 workflow metaxcan_wf {
 

@@ -1,5 +1,5 @@
-# WDL for running Metaxcan S-PrediXcan on a single tissue expression database
 task metaxcan {
+    # Task for running S-PrediXcan on a single tissue expression database
     File model_db_file
     File covariance_file
     Array[File] gwas_files
@@ -43,8 +43,8 @@ task metaxcan {
   }
 }
 
-# WDL for running MetaMany, which runs S-PrediXcan in serial on multiple tissue databases
 task metamany {
+    # Task for running MetaMany, which runs S-PrediXcan in serial on multiple tissue databases
     Array[File] model_db_files
     Array[String] model_db_glob_patterns
     Array[File] covariance_files

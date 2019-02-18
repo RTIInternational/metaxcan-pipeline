@@ -97,3 +97,65 @@ task metamany {
         memory: "16 GB"
   }
 }
+
+task smultixcan {
+    # Task for running S-MultiXcan across multiple tissue expression databases
+    Array[File] model_db_files
+    Array[File] metaxcan_output_files
+    Array[File] gwas_files
+    File covariance_file
+    String model_name_pattern
+    String metaxcan_file_name_parse_pattern
+    String snp_column
+    String effect_allele_column
+    String non_effect_allele_column
+    String beta_column
+    String pvalue_column
+    String se_column
+    String output_base
+    Float cutoff_threshold
+    String output_file = output_base + ".smultixcan_results.csv"
+
+    command {
+
+        mkdir ./metaxcan_dir
+        cp -r ${sep=' ./metaxcan_dir ; cp -r ' metaxcan_output_files} ./metaxcan_dir
+        ls -l ./metaxcan_dir
+
+        mkdir ./model_dir
+        cp -r ${sep=' ./model_dir ; cp -r ' model_db_files} ./model_dir
+        ls -l ./model_dir
+
+        mkdir ./gwas_dir
+        cp -r ${sep=' ./gwas_dir ; cp -r ' gwas_files} ./gwas_dir
+        ls -l ./gwas_dir
+
+        source activate metaxcan
+
+        /opt/code_docker_lib/MetaXcan/software/SMulTiXcan.py \
+            --models_folder ./model_dir \
+            --snp_covariance ${covariance_file} \
+            --metaxcan_folder ./metaxcan_dir \
+            --gwas_folder ./gwas_dir \
+            --beta_column ${beta_column} \
+            --pvalue_column ${pvalue_column} \
+            --effect_allele_column ${effect_allele_column} \
+            --non_effect_allele_column ${non_effect_allele_column} \
+            --snp_column ${snp_column} \
+            --se_column ${se_column} \
+            --verbosity 1 \
+            --output ${output_file} \
+            --models_name_pattern "${model_name_pattern}" \
+            --metaxcan_file_name_parse_pattern "${metaxcan_file_name_parse_pattern}" \
+            --cutoff_threshold ${cutoff_threshold}
+
+    }
+    output {
+        File smultixcan_output = output_file
+    }
+    runtime {
+        docker: "alexwaldrop/metaxcan:75065864afcec43181f17ef00c8518a2d29fe8a7"
+        cpu: "8"
+        memory: "32 GB"
+  }
+}

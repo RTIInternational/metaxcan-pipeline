@@ -22,28 +22,29 @@ workflow smultixcan_wf {
     File gtex_variant_file
     String preprocessing_output_base = "processed_metaxcan_input"
 
-    # Inputs for metamany
+   # Inputs for metaxcan/smultixcan
     Array[File] model_db_files
-    Array[String] model_db_glob_patterns
-    Array[File] covariance_files
+    Array[File] metaxcan_covariance_files
+    File smultixcan_covariance_file
+    String model_name_pattern
+    String metaxcan_file_name_parse_pattern
     String snp_column
     String effect_allele_column
     String non_effect_allele_column
     String beta_column
     String pvalue_column
     String se_column
+    Float smultixcan_cutoff_threshold = 0.4
 
-    # Inputs for p-value adjusting
+    # P-value correciton inputs
     String pvalue_adj_method
+    Float adj_pvalue_filter_threshold
     String pvalue_colname = "pvalue"
 
-    Float adj_pvalue_filter_threshold_within_tissue
-    Float adj_pvalue_filter_threshold_across_tissue
 
-    # Basename for final output files
-    String combined_output_basename = "metaxcan_results_combined"
-    String across_tissue_output_basename = "metaxcan_results_across_tissue_${pvalue_adj_method}_${adj_pvalue_filter_threshold_across_tissue}"
-    String within_tissue_output_basename = "metaxcan_results_within_tissue_${pvalue_adj_method}_${adj_pvalue_filter_threshold_within_tissue}"
+    # Basename for final output file
+    String smultixcan_output_basename = "s-MulTiXcan_results"
+    String pvalue_output_basename = "s-MulTiXcan_results_${pvalue_adj_method}_${adj_pvalue_filter_threshold}"
 
     # Standardize input files in parallel
     scatter (chr_index in range(length(chrs))){
@@ -75,10 +76,10 @@ workflow smultixcan_wf {
 
     # Run s-prediXcan in parallel across input tissue types
     scatter (model_index in range(length(model_db_files))){
-        call METAXCAN.metaxcan{
+        call METAXCAN.metaxcan as metaxcan{
             input:
                 model_db_file = model_db_files[model_index],
-                covariance_file = covariance_files[model_index],
+                covariance_file = metaxcan_covariance_files[model_index],
                 gwas_files = preprocessing.metaxcan_ready_output_file,
                 snp_column = snp_column,
                 effect_allele_column = effect_allele_column,
@@ -89,57 +90,40 @@ workflow smultixcan_wf {
         }
     }
 
-    # Add ID column to end of each s-prediXcan output so we can combine and still have source file info
-    scatter (metaxcan_output in metaxcan.metaxcan_output){
-        call UTIL.add_col_to_csv as add_id_col{
-            input:
-                input_file = metaxcan_output,
-                colname = "Source",
-                value = basename(metaxcan_output, ".csv")
-        }
-    }
 
-    # Concatenate all CSVs into one large csv
-    call UTIL.cat_csv{
+    # Run s-MulTiXcan on s-PrediXcan results to test for associations across multiple tissue types
+    call METAXCAN.smultixcan as smultixcan{
         input:
-            input_files = add_id_col.col_output,
-            output_base = combined_output_basename
-    }
+            model_db_files = model_db_files,
+            metaxcan_output_files = metaxcan.metaxcan_output,
+            gwas_files = preprocessing.metaxcan_ready_output_file,
+            covariance_file = smultixcan_covariance_file,
+            model_name_pattern = model_name_pattern,
+            metaxcan_file_name_parse_pattern = metaxcan_file_name_parse_pattern,
+            output_base = smultixcan_output_basename,
+            snp_column = snp_column,
+            effect_allele_column = effect_allele_column,
+            non_effect_allele_column = non_effect_allele_column,
+            beta_column = beta_column,
+            pvalue_column = pvalue_column,
+            se_column = se_column,
+            cutoff_threshold=smultixcan_cutoff_threshold
+     }
 
-    # Correct for multiple tests across tissues (more conservative)
-    call ADJPVALUES.adj_csv_pvalue as across_tissue_adj_pvalue{
+         # Correct for multiple tests across tissues (more conservative)
+    call ADJPVALUES.adj_csv_pvalue as adj_pvalue{
         input:
-            input_file = cat_csv.cat_csv_output,
+            input_file = smultixcan.smultixcan_output,
             pvalue_colname = pvalue_colname,
-            filter_threshold = adj_pvalue_filter_threshold_across_tissue,
+            filter_threshold = adj_pvalue_filter_threshold,
             method = pvalue_adj_method,
-            output_file_base = across_tissue_output_basename
-    }
-
-    # Correct for multiple tests within tissues (less conservative)
-    scatter (metaxcan_output_with_id in add_id_col.col_output){
-        call ADJPVALUES.adj_csv_pvalue as within_tissue_adj_pvalue{
-            input:
-                input_file = metaxcan_output_with_id,
-                pvalue_colname = pvalue_colname,
-                filter_threshold = adj_pvalue_filter_threshold_within_tissue,
-                method = pvalue_adj_method,
-                output_file_base = basename(metaxcan_output_with_id, ".csv")
-        }
-    }
-
-    # Concatenate all within-tissue CSVs into one file
-    call UTIL.cat_csv as gather_within_tissue_csvs {
-        input:
-            input_files = within_tissue_adj_pvalue.adj_output_file,
-            output_base = within_tissue_output_basename
+            output_file_base = pvalue_output_basename
     }
 
     output{
         Array[File] metaxcan_output = metaxcan.metaxcan_output
-        File combined_metaxcan_output = cat_csv.cat_csv_output
-        File across_tissue_adj_metaxcan_output = across_tissue_adj_pvalue.adj_output_file
-        File within_tissue_adj_metaxcan_output = gather_within_tissue_csvs.cat_csv_output
+        File smultixcan_output = smultixcan.smultixcan_output
+        File smultixcan_corrected_output = adj_pvalue.adj_output_file
     }
 
 }

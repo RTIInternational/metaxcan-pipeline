@@ -1,0 +1,5 @@
+{
+  "smultixcan_pvalue_adj_wf.pvalue_adj_method" : "fdr",
+  "smultixcan_pvalue_adj_wf.adj_pvalue_filter_threshold" : 0.75,
+  "smultixcan_pvalue_adj_wf.smultixcan_output" : "s3://rti-cromwell-output/cromwell-execution/smultixcan_wf/7bd3edc7-069b-4dcd-987b-cfd3eff3b17c/call-smultixcan/s-MulTiXcan_results.smultixcan_results.csv"
+}

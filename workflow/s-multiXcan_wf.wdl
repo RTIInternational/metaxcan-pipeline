@@ -117,7 +117,8 @@ workflow smultixcan_wf {
             pvalue_colname = pvalue_colname,
             filter_threshold = adj_pvalue_filter_threshold,
             method = pvalue_adj_method,
-            output_file_base = pvalue_output_basename
+            output_file_base = pvalue_output_basename,
+            tab_delimited=true
     }
 
     output{

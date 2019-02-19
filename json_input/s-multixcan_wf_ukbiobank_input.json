@@ -64,7 +64,7 @@
 
   "##_COMMENT3": "METAXCAN REFERENCES",
   "smultixcan_wf.pvalue_adj_method" : "fdr",
-  "smultixcan_wf.adj_pvalue_filter_threshold" : 0.15,
+  "smultixcan_wf.adj_pvalue_filter_threshold" : 0.75,
   "smultixcan_wf.pvalue_column": "P",
   "smultixcan_wf.effect_allele_column": "A1",
   "smultixcan_wf.beta_column": "BETA",

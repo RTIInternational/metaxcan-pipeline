@@ -8,7 +8,6 @@ workflow spredixcan_wf {
     ########### Inputs for standardizing GWAS/Meta-analysis output files for input to metaxcan preprocessing
     # GWAS/Meta-analysis output files that will be used for S-PrediXcan
     Array[File] gwas_input_files
-
     # 1-based column indices of required information columns
     Int input_id_col
     Int input_chr_col
@@ -45,7 +44,6 @@ workflow spredixcan_wf {
     ########### Inputs for p-value correction
     String pvalue_adj_method
     String pvalue_colname = "pvalue"
-
     # P-value thresholds for filtering s-PrediXcan results after multiple test correction
     Float adj_pvalue_filter_threshold_within_tissue
     Float adj_pvalue_filter_threshold_across_tissue
@@ -127,7 +125,7 @@ workflow spredixcan_wf {
             output_base = combined_output_basename
     }
 
-    # Correct gene p-values for all tests ACROSS ALL tissues (more conservative)
+    # Correct gene p-values for all tests ACROSS ALL tissues (more conservative. Num tests = num genes X num tissues)
     call ADJPVALUES.adj_csv_pvalue as across_tissue_adj_pvalue{
         input:
             input_file = cat_csv.cat_csv_output,
@@ -137,7 +135,7 @@ workflow spredixcan_wf {
             output_file_base = across_tissue_output_basename
     }
 
-    # Correct gene p-values for all tests separately WITHIN EACH tissue (less conservative)
+    # Correct gene p-values for all tests separately WITHIN EACH tissue (less conservative. Num tests = num genes)
     scatter (metaxcan_output_with_id in add_id_col.col_output){
         call ADJPVALUES.adj_csv_pvalue as within_tissue_adj_pvalue{
             input:

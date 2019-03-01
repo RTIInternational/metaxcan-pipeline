@@ -1,18 +1,18 @@
 {
   "## Analysis name to be appended to output files for easily keeping track of outputs": "",
-    "spredixcan_wf.analysis_name" : "ftnd",
+    "smultixcan_wf.analysis_name" : "ftnd",
 
   "####################### STEP_1 INPUTS: Standardize GWAS/Meta-analysis output files for input to S-PrediXcan": "",
   "## Make sure you set the 1-based column index of each information column as they appear in your gwas_input_files": "",
-    "spredixcan_wf.input_id_col":     1,
-    "spredixcan_wf.input_chr_col":    2,
-    "spredixcan_wf.input_pos_col":    3,
-    "spredixcan_wf.input_a1_col":     4,
-    "spredixcan_wf.input_a2_col":     5,
-    "spredixcan_wf.input_beta_col":   6,
-    "spredixcan_wf.input_se_col":     7,
-    "spredixcan_wf.input_pvalue_col": 8,
-    "spredixcan_wf.gwas_input_files": [
+    "smultixcan_wf.input_id_col":     1,
+    "smultixcan_wf.input_chr_col":    2,
+    "smultixcan_wf.input_pos_col":    3,
+    "smultixcan_wf.input_a1_col":     4,
+    "smultixcan_wf.input_a2_col":     5,
+    "smultixcan_wf.input_beta_col":   6,
+    "smultixcan_wf.input_se_col":     7,
+    "smultixcan_wf.input_pvalue_col": 8,
+    "smultixcan_wf.gwas_input_files": [
       "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr1.exclude_singletons.1df.gz",
       "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr2.exclude_singletons.1df.gz",
       "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr3.exclude_singletons.1df.gz",
@@ -38,14 +38,14 @@
     ],
   "####################### STEP_2 INPUTS: Transform standardized GWAS/Meta-analysis outputs to metaxcan input format": "",
   "## Make sure chromosomes are same order as gwas_input files above.": "",
-    "spredixcan_wf.chrs": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],
+    "smultixcan_wf.chrs": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],
 
   "## PredictDB snp annotation file. Used to convert snp_ids of gwas_inputs to same ids used by PredictDB tissue models for metaXcan": "",
-    "spredixcan_wf.gtex_variant_file": "s3://rti-common/metaxcan_predictDB/release_11-29-2017/gtex_v7_hapmapceu_dbsnp150_snp_annot.txt",
+    "smultixcan_wf.gtex_variant_file": "s3://rti-common/metaxcan_predictDB/release_11-29-2017/gtex_v7_hapmapceu_dbsnp150_snp_annot.txt",
 
   "## 1000g Legend files. Used to convert snp ids from gtex_variant files and gwas files to common snp ids.": "",
   "## Make sure legend files are in same order as chromosomes, gwas_files above": "",
-    "spredixcan_wf.legend_files_1000g": [
+    "smultixcan_wf.legend_files_1000g": [
       "s3://rti-common/ref_panels/1000G/impute_format/1000g_phase3/1000GP_Phase3_chr1.legend.gz",
       "s3://rti-common/ref_panels/1000G/impute_format/1000g_phase3/1000GP_Phase3_chr2.legend.gz",
       "s3://rti-common/ref_panels/1000G/impute_format/1000g_phase3/1000GP_Phase3_chr3.legend.gz",
@@ -71,7 +71,7 @@
     ],
   "####################### STEP_3 INPUTS: S-PrediXcan":"",
   "## Make sure PredictDB model_db/covariance files are in same tissue order": "",
-    "spredixcan_wf.model_db_files": [
+    "smultixcan_wf.model_db_files": [
       "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Amygdala_imputed_europeans_tw_0.5_signif.db",
       "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Anterior_cingulate_cortex_BA24_imputed_europeans_tw_0.5_signif.db",
       "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Caudate_basal_ganglia_imputed_europeans_tw_0.5_signif.db",
@@ -88,7 +88,7 @@
     ],
   "## Annoying quirk: PredictDB covariance files MUST have same file prefix as model files with .txt.gz added. MetaXcan will die otherwise.": "",
   "## eg: brain_cerebellum_europeans.db and brain_cerebellum_europeans.db.txt.gz": "",
-    "spredixcan_wf.covariance_files": [
+    "smultixcan_wf.metaxcan_covariance_files": [
       "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Amygdala_imputed_europeans_tw_0.5_signif.db.txt.gz",
       "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Anterior_cingulate_cortex_BA24_imputed_europeans_tw_0.5_signif.db.txt.gz",
       "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Caudate_basal_ganglia_imputed_europeans_tw_0.5_signif.db.txt.gz",
@@ -103,14 +103,31 @@
       "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Spinal_cord_cervical_c-1_imputed_europeans_tw_0.5_signif.db.txt.gz",
       "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Substantia_nigra_imputed_europeans_tw_0.5_signif.db.txt.gz"
     ],
-  "####################### STEP_4 INPUTS: P-VALUE CORRECTION:":"",
-  "## Final filtered S-PrediXcan results will only contain genes with p-values <= these thresholds": "",
-    "spredixcan_wf.adj_pvalue_filter_threshold_within_tissue" : 0.15,
-    "spredixcan_wf.adj_pvalue_filter_threshold_across_tissue" : 0.15,
+  "####################### STEP_4 INPUTS: MulTiXcan":"",
+  "## Make sure model_name_pattern is a regex that matches all model filenames. The (.*) capture will extract the tissue name so make sure that's in the right place.": "",
+    "smultixcan_wf.model_name_pattern": "gtex_v7_(.*)_imputed_europeans_tw_0.5_signif.db",
+
+  "## Make sure metaxcan_file_name_parse_pattern is a regex that matches all sPrediXcan output filenames.": "",
+  "## S-PrediXcan output filenames will be the model filename with '.db' replaced by 'metaxcan_results.csv'": "",
+    "smultixcan_wf.metaxcan_file_name_parse_pattern": "gtex_v7_(.*)_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+
+  "## PredictDB covariance file. This should be large (~7GB)": "",
+    "smultixcan_wf.smultixcan_covariance_file" : "s3://rti-common/metaxcan_predictDB/release_11-29-2017/snp_covariance_v7.txt.gz",
+
+  "## MultiXcan cutoff threshold. Check MetaXcan documentation for details.": "",
+    "smultixcan_wf.smultixcan_cutoff_threshold": 0.4,
+
+  "####################### STEP_5 INPUTS: P-VALUE CORRECTION":"",
+  "## Final filtered S-MulTiXcan results will only contain genes with p-values <= this thresholds": "",
+    "smultixcan_wf.adj_pvalue_filter_threshold" : 0.75,
 
   "## Accepted methods for pvalue adjustment: fdr, bonferroni, holm, hochberg, hommel, BY": "",
   "## For more information on pvalue adjustments see R p.adjust() method": "",
-    "spredixcan_wf.pvalue_adj_method" : "fdr"
+    "smultixcan_wf.pvalue_adj_method" : "fdr",
+
+  "## Pvalue thresholds used for S-Predixcan postprocessing and gene filtering": "",
+    "smultixcan_wf.adj_pvalue_filter_threshold_within_tissue" : 0.15,
+    "smultixcan_wf.adj_pvalue_filter_threshold_across_tissue" : 0.15
 }
 
 

@@ -1,0 +1,17 @@
+{
+  "## CSV output files from S-PrediXcan": "",
+    "postprocess_metaxcan_results_wf.metaxcan_output_files":
+      [
+        "s3://rti-cromwell-output/cromwell-execution/smultixcan_wf/a25238cf-0716-48cc-bb25-4efbfa8c8185/call-metaxcan/METAXCAN.spredixcan_wf/92a0c7cc-f4ba-4b8b-bd8b-905018973d2c/call-spredixcan/shard-0/gtex_v7_Brain_Amygdala_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+        "s3://rti-cromwell-output/cromwell-execution/smultixcan_wf/a25238cf-0716-48cc-bb25-4efbfa8c8185/call-metaxcan/METAXCAN.spredixcan_wf/92a0c7cc-f4ba-4b8b-bd8b-905018973d2c/call-spredixcan/shard-1/gtex_v7_Brain_Anterior_cingulate_cortex_BA24_imputed_europeans_tw_0.5_signif.metaxcan_results.csv"
+      ],
+
+  "## Final filtered S-PrediXcan results will only contain genes with p-values <= these thresholds": "",
+    "postprocess_metaxcan_results_wf.pvalue_adj_method": "bonferroni",
+    "postprocess_metaxcan_results_wf.adj_pvalue_filter_threshold_across_tissue": 0.15,
+    "postprocess_metaxcan_results_wf.adj_pvalue_filter_threshold_within_tissue": 0.15,
+
+  "## Basenames for sig hit output files. Output files will look like <basename>.csv": "",
+    "postprocess_metaxcan_results_wf.across_tissue_output_basename": "metaxcan_across_tissue_sig_hits_lt_0.15",
+    "postprocess_metaxcan_results_wf.within_tissue_output_basename": "metaxcan_within_tissue_sig_hits_lt_0.15"
+}

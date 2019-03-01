@@ -1,9 +1,12 @@
 import "metaxcan-pipeline/workflow/tasks/metaxcan_preprocessing.wdl" as PREPROCESSING
 import "metaxcan-pipeline/workflow/tasks/metaxcan.wdl" as METAXCAN
-import "metaxcan-pipeline/workflow/tasks/adj_csv_pvalue.wdl" as ADJPVALUES
+import "metaxcan-pipeline/workflow/postprocess_metaxcan_results_wf.wdl" as POSTPROCESSING
 import "metaxcan-pipeline/workflow/tasks/utilities.wdl" as UTIL
 
 workflow spredixcan_wf {
+
+    # Analysis name to be appended to filenames
+    String analysis_name
 
     ########### Inputs for standardizing GWAS/Meta-analysis output files for input to metaxcan preprocessing
     # GWAS/Meta-analysis output files that will be used for S-PrediXcan
@@ -24,34 +27,22 @@ workflow spredixcan_wf {
     Array[File] legend_files_1000g
     # PredictDB variant annotation file
     File gtex_variant_file
-    String preprocessing_output_base = "processed_metaxcan_input"
 
     ########### Inputs for s-predixcan
     # Tissue specific PredictDB expression models used by MetaXcan to predict gene expression from genotypes
     Array[File] model_db_files
     # Tissue specific PredictDB covariance files used by MetaXcan
     Array[File] covariance_files
-    # S-Predixcan contstant parameters.
-    #   DO NOT change these as standardization step will set colnames to correct values automatically
-    Array[String] model_db_glob_patterns = ["*.db"]
-    String snp_column = "SNP"
-    String effect_allele_column = "A1"
-    String non_effect_allele_column = "A2"
-    String beta_column = "BETA"
-    String pvalue_column = "P"
-    String se_column = "StdErr"
 
     ########### Inputs for p-value correction
     String pvalue_adj_method
-    String pvalue_colname = "pvalue"
     # P-value thresholds for filtering s-PrediXcan results after multiple test correction
     Float adj_pvalue_filter_threshold_within_tissue
     Float adj_pvalue_filter_threshold_across_tissue
 
     # Basenames for final output files. Defaults can be changed as needed in the input json.
-    String combined_output_basename = "metaxcan_results_combined"
-    String across_tissue_output_basename = "metaxcan_results_across_tissue_${pvalue_adj_method}_${adj_pvalue_filter_threshold_across_tissue}"
-    String within_tissue_output_basename = "metaxcan_results_within_tissue_${pvalue_adj_method}_${adj_pvalue_filter_threshold_within_tissue}"
+    String across_tissue_output_basename = "${analysis_name}_metaxcan_results_across_tissue_${pvalue_adj_method}_${adj_pvalue_filter_threshold_across_tissue}"
+    String within_tissue_output_basename = "${analysis_name}_metaxcan_results_within_tissue_${pvalue_adj_method}_${adj_pvalue_filter_threshold_within_tissue}"
 
     ####################### MAIN PROGRAM ##############################
 
@@ -87,86 +78,56 @@ workflow spredixcan_wf {
                 chr = chrs[chr_index],
                 legend_file_1000g = legend_files_1000g[chr_index],
                 gtex_variant_file = gtex_variant_file,
-                output_base = preprocessing_output_base
+                output_base = "processed_metaxcan_input"
         }
     }
 
     # Run s-prediXcan in parallel across input tissue types
     scatter (model_index in range(length(model_db_files))){
-        call METAXCAN.metaxcan{
+        call METAXCAN.metaxcan as spredixcan{
             input:
                 model_db_file = model_db_files[model_index],
                 covariance_file = covariance_files[model_index],
                 gwas_files = preprocessing.metaxcan_ready_output_file,
-                snp_column = snp_column,
-                effect_allele_column = effect_allele_column,
-                non_effect_allele_column = non_effect_allele_column,
-                beta_column = beta_column,
-                pvalue_column = pvalue_column,
-                se_column = se_column
+                snp_column = "SNP",
+                effect_allele_column = "A1",
+                non_effect_allele_column = "A2",
+                beta_column = "BETA",
+                pvalue_column = "P",
+                se_column = "StdErr"
         }
     }
 
-    # Add tissue ID column to end of each s-prediXcan output csv
-    # Associates each gene result with the source tissue so we can combine into single file and not lose this info
-    scatter (metaxcan_output in metaxcan.metaxcan_output){
-        call UTIL.add_col_to_csv as add_id_col{
-            input:
-                input_file = metaxcan_output,
-                colname = "Source",
-                value = basename(metaxcan_output, ".csv")
-        }
-    }
-
-    # Concatenate all s-PrediXcan output csvs into one large csv
-    call UTIL.cat_csv{
+    # Adjust metaxcan p-values within and across tissue types and filter significant hits
+    call POSTPROCESSING.postprocess_metaxcan_results_wf as postprocessing{
         input:
-            input_files = add_id_col.col_output,
-            output_base = combined_output_basename
-    }
-
-    # Correct gene p-values for all tests ACROSS ALL tissues (more conservative. Num tests = num genes X num tissues)
-    call ADJPVALUES.adj_csv_pvalue as across_tissue_adj_pvalue{
-        input:
-            input_file = cat_csv.cat_csv_output,
-            pvalue_colname = pvalue_colname,
-            filter_threshold = adj_pvalue_filter_threshold_across_tissue,
-            method = pvalue_adj_method,
-            output_file_base = across_tissue_output_basename
-    }
-
-    # Correct gene p-values for all tests separately WITHIN EACH tissue (less conservative. Num tests = num genes)
-    scatter (metaxcan_output_with_id in add_id_col.col_output){
-        call ADJPVALUES.adj_csv_pvalue as within_tissue_adj_pvalue{
-            input:
-                input_file = metaxcan_output_with_id,
-                pvalue_colname = pvalue_colname,
-                filter_threshold = adj_pvalue_filter_threshold_within_tissue,
-                method = pvalue_adj_method,
-                output_file_base = basename(metaxcan_output_with_id, ".csv")
-        }
-    }
-
-    # Concatenate all WITHIN-TISSUE CSV results into one file
-    call UTIL.cat_csv as gather_within_tissue_csvs {
-        input:
-            input_files = within_tissue_adj_pvalue.adj_output_file,
-            output_base = within_tissue_output_basename
+            # Metaxcan output files from one or more tissues
+            metaxcan_output_files = spredixcan.metaxcan_output,
+            pvalue_adj_method=pvalue_adj_method,
+            pvalue_colname="pvalue",
+            adj_pvalue_filter_threshold_across_tissue=adj_pvalue_filter_threshold_across_tissue,
+            adj_pvalue_filter_threshold_within_tissue=adj_pvalue_filter_threshold_within_tissue,
+            across_tissue_output_basename=across_tissue_output_basename,
+            within_tissue_output_basename=within_tissue_output_basename
     }
 
     # Final output files
     output{
+
+        # Input files used for running metaxcan
+        Array[File] metaxcan_input = preprocessing.metaxcan_ready_output_file
+
         # Raw s-prediXcan output CSVs for each tissue tested
-        Array[File] metaxcan_output = metaxcan.metaxcan_output
+        Array[File] metaxcan_output = spredixcan.metaxcan_output
 
         # Raw s-prediXcan output consolidated into single CSV
-        File combined_metaxcan_output = cat_csv.cat_csv_output
+        File combined_metaxcan_output = postprocessing.combined_metaxcan_output
 
         # Significant gene hits after correcting for multiple tests ACROSS ALL tissues and filtering based on p-value
-        File across_tissue_adj_metaxcan_output = across_tissue_adj_pvalue.adj_output_file
+        File across_tissue_adj_metaxcan_output = postprocessing.across_tissue_adj_metaxcan_output
 
         # Significant gene hits after correcting for multilpe tests WITHIN EACH tissue and filtering based on p-value
-        File within_tissue_adj_metaxcan_output = gather_within_tissue_csvs.cat_csv_output
+        File within_tissue_adj_metaxcan_output = postprocessing.within_tissue_adj_metaxcan_output
     }
 
 }

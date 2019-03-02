@@ -195,7 +195,8 @@ If you want to check the output of Cromwell Server as it runs (say to check for 
 This is another way to check if the server has run out of heap space. 
         
 
-### Setting your input parameters
+### Modifying JSON input files for your specific analysis 
+These steps discuss how to modify the JSON input templates to be able to run either workflow on your specific data. 
 
 
 

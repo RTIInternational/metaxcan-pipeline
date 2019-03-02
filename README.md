@@ -23,11 +23,11 @@ associations between gene expression and genomic variants.
 Full documentation of the MetaXcan suite including S-PrediXcan and S-MulTiXcan can be found [here](https://github.com/hakyimlab/MetaXcan/tree/master/software)
 
 ### Metaxcan S-PrediXcan workflow overview
-<div align=center><img src="doc/metaxcan_pipeline.pdf" alt="S-PrediXcan Workflow" width=400 height=500 align="middle"/></div>
+<div align=center><img src="doc/metaxcan_pipeline.png" alt="S-PrediXcan Workflow" width=781 height=900 align="middle"/></div>
 
 ### S-MulTiXcan workflow overview
 Runs S-PrediXcan workflow but also run S-MultiXcan as a final step to look for genes significant across all tissues. 
-<div align=center><img src="doc/multixcan_pipeline.pdf" alt="S-MulTiXcan Workflow" width=400 height=500 align="middle"/></div>
+<div align=center><img src="doc/multixcan_pipeline.png" alt="S-MulTiXcan Workflow" width=533 height=615 align="middle"/></div>
 
 ### Workflow implementation
 The workflows contained in this repo are implemented in the [Workflow Development Language (WDL)](https://software.broadinstitute.org/wdl/). 

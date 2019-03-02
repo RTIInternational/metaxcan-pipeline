@@ -76,13 +76,13 @@ For the purpose of this document, we will focus on how to run the pipeline in th
 
 For a detailed tutorial of running WDL/Cromwell on AWS batch, [check this link](https://cromwell.readthedocs.io/en/develop/tutorials/AwsBatch101/). 
 
-Workflow WDL files:
+**Workflow WDL files** - Defines required input types and the workflow steps to execute. These don't change.:
    * Metaxcan workflow: **workflow/s-prediXcan_wf.wdl**
    * Multixcan workflow: **workflow/s-mulTiXcan_wf.wdl**
     
-WDL input file templates:
-   * MetaXcan input template: **json_input/s-prediXcan_wf_example_input.json**
-   * MultiXcan input template: **json_input/s-mulTiXcan_wf_example_input.json**
+**WDL input file templates** -Defines analysis-specific input files/value for running the worflow on your data. Modify these to suite your specific analysis (discucsed below):
+   * MetaXcan example input template: **json_input/s-prediXcan_wf_example_input.json**
+   * MultiXcan example input template: **json_input/s-mulTiXcan_wf_example_input.json**
 
 ### Run a workflow on AWS via your local machine
 
@@ -118,15 +118,15 @@ If you have a long-running job or intermittent internet connection, you may want
 This will run the job through a persistent EC2 instance that runs cromwell in server mode.
 
 1. Check the list of EC2 instances for an EC2 instance called 'cromwell-server'. If one doesn't exists, this option won't work. 
-2. Get the public IP address of the 'cromwell-server' EC2 instance
+2. Get the public IP address of the 'cromwell-server' EC2 instance from the EC2 dashboard
     
         It should look like this: 54.175.125.189 (note: this isn't the actual IP)
         
-3. Open an SSH connection with cromwell server in one terminal. Keep it open until you submit.
+3. Open an SSH connection with cromwell server in one terminal on your local machine. Keep it open until you submit.
     
         ssh -L localhost:8000:localhost:8000 ec2-user@54.175.125.189
         
-4. In another terminal, use curl to submit the job to the server.
+4. In another terminal on your local machine, submit the job to the server.
 
         curl -X POST "http://localhost:8000/api/workflows/v1" -H "accept: application/json" \
             -F "workflowSource=@/Users/awaldrop/PycharmProjects/metaxcan-pipeline/workflow/s-mulTiXcan_wf.wdl" \
@@ -139,6 +139,7 @@ This will run the job through a persistent EC2 instance that runs cromwell in se
         {"id":"7067f7c3-ba65-401c-8bd0-5e0438535309","status":"Submitted"}
         
 That's it. You can now exit the ssh terminal and the job will continue to run until error or completion. 
+
     
 ### Workflow outputs
 Currently, all cromwell output gets written to **s3://rti-cromwell-output/cromwell-execution**
@@ -166,6 +167,34 @@ If something failed, you can either go to the output directory to see what jobs 
 If you want to see real-time status of what jobs are getting run, navigate to the batch console on AWS and click on the **DefaultGenomicsQueue** to get a real-time readout 
 of running jobs. 
 
+#### What happens if my server job seems 'stuck?'
+The cromwell server is currently a small instance. Lots of jobs running simultaenously can cause the server to run
+out of heap space. You'll know your job is stuck because AWS batch will have no jobs queue/submitted/running but your analysis is halfway done or hasn't started.
+
+The quick fix is to reboot the cromwell instance.
+
+1. Reboot the 'cromwell-server' instance from the EC2 dashboard
+
+2. ssh into to cromwell-server once EC2 is rebooted
+        
+        ssh -L localhost:8000:localhost:8000 ec2-user@54.175.125.189
+3. Open a new screen session called Cromwell
+
+        screen -S Cromwell
+        
+4. Re-start the cromwell server
+
+        bash ./run_cromwell_server.sh
+        
+5. Close out of terminal. Cromwell server will be running in the background now and is live for new submissions.
+
+If you want to check the output of Cromwell Server as it runs (say to check for a heap overflow error), ssh and run:
+
+        screen -r Cromwell
+        
+This is another way to check if the server has run out of heap space. 
+        
+
 ### Setting your input parameters
 
 
@@ -178,7 +207,7 @@ of running jobs.
         1. GWAS Input files
         2. PredictDB tissue model files
         3. pvalue filter thresholds
-3. Run the workflow using WDL
+3. Run the workflow using WDL either on your local machine or through Cromwell Server
 4. Monitor the job until it completes
 
 ## Authors

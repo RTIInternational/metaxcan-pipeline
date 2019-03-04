@@ -196,20 +196,114 @@ This is another way to check if the server has run out of heap space.
         
 
 ### Modifying JSON input files for your specific analysis 
-These steps discuss how to modify the JSON input templates to be able to run either workflow on your specific data. 
+These steps discuss how to modify the JSON input templates when you want to run your own analysis.
+
+#### A note on example workflow input templates
+The workflow input templates mentioned above are designed to give you an idea of the input files/values you'll need to set to run on your own data.
+They're well commented and broken down by section to help orient you to which inputs are used by each task. All comments and section delimiters
 
 
+#### S-PrediXcan workflow inputs
+1. Make a copy of the **json_input/s-prediXcan_wf_example_input.json**
 
+2. Set the 'analysis_name' input. This name will be appended to output files to help keep track for downstream analysis. 
 
+          "## Analysis name to be appended to output files for easily keeping track of outputs": "",
+            "spredixcan_wf.analysis_name" : "ftnd",
+          
+3. Set your meta-analysis/GWAS input files in numerical chr order (1-22). Also make sure these files actually exists on CODE S3 or are public. 
+ 
+        "spredixcan_wf.gwas_input_files": 
+            [
+            "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr1.exclude_singletons.1df.gz",
+            "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr2.exclude_singletons.1df.gz",
+            "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr3.exclude_singletons.1df.gz",
+            ...
+            "s3://rti-nd/META/1df/20181108/results/ea/20181108_ftnd_meta_analysis_wave3.eur.chr22.exclude_singletons.1df.gz"
+            ],
+
+4. Set the 1-based column indices for required columns as they appear in your GWAS inputs. 
+         
+            "spredixcan_wf.input_id_col":     1,
+            "spredixcan_wf.input_chr_col":    2,
+            "spredixcan_wf.input_pos_col":    3,
+            "spredixcan_wf.input_a1_col":     4,
+            "spredixcan_wf.input_a2_col":     5,
+            "spredixcan_wf.input_beta_col":   6,
+            "spredixcan_wf.input_se_col":     7,
+            "spredixcan_wf.input_pvalue_col": 8,
+            
+5. Set the input paths to PredictDB tissue model files of interest. Example template already contains valid paths to all brain region models so no need to change if these are your target tissues.
+
+        "####################### STEP_3 INPUTS: S-PrediXcan":"",
+        "## Make sure PredictDB model_db/covariance files are in same tissue order": "",
+        "spredixcan_wf.model_db_files": 
+        [
+            "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Amygdala_imputed_europeans_tw_0.5_signif.db",
+            "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Anterior_cingulate_cortex_BA24_imputed_europeans_tw_0.5_signif.db",
+            "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Caudate_basal_ganglia_imputed_europeans_tw_0.5_signif.db",
+            ...
+            "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Substantia_nigra_imputed_europeans_tw_0.5_signif.db"
+        ],
+
+6. Set the input paths to PredictDB covariance files for tissue of interest. 
+    * Each model file must have corresponding covariance file. They should be in same order in array as well. 
+    * Covariance filenames **must** have same filename as model file but replace .db with .txt.gz (MetaXcan will fail otherwise)
+        
+            "spredixcan_wf.covariance_files": 
+            [
+                "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Amygdala_imputed_europeans_tw_0.5_signif.db.txt.gz",
+                "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Anterior_cingulate_cortex_BA24_imputed_europeans_tw_0.5_signif.db.txt.gz",
+                "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Caudate_basal_ganglia_imputed_europeans_tw_0.5_signif.db.txt.gz",
+                ...
+                "s3://rti-common/metaxcan_predictDB/release_11-29-2017/GTEx-V7_HapMap-2017-11-29/gtex_v7_Brain_Substantia_nigra_imputed_europeans_tw_0.5_signif.db.txt.gz"
+            ],
+            
+7. Set p-value correction method and corrected pvalue filtering cutoffs. Only genes below these thresholds will appear in filtered output files.
+
+        "####################### STEP_4 INPUTS: P-VALUE CORRECTION:":"",
+        "## Final filtered S-PrediXcan results will only contain genes with p-values <= these thresholds": "",
+            "spredixcan_wf.adj_pvalue_filter_threshold_within_tissue" : 0.15,
+            "spredixcan_wf.adj_pvalue_filter_threshold_across_tissue" : 0.15,
+
+        "## Accepted methods for pvalue adjustment: fdr, bonferroni, holm, hochberg, hommel, BY": "",
+        "## For more information on pvalue adjustments see R p.adjust() method": "",
+            "spredixcan_wf.pvalue_adj_method" : "fdr"
+            
+8. You're done! All other input parameters are intended to be static across workflows. Modify with caution and only if you want to update a 
+static reference file and know what you're doing.
+
+#### S-MulTiXcan workflow inputs
+Steps 1-8 are unchanged for modifying input template to run S-MulTiXcan workflow. Do those first. 
+
+1. Modify MulTiXcan tissue regex pattern to parse out tissue names from PredictDB model files.
+
+        "####################### STEP_4 INPUTS: MulTiXcan":"",
+        "## Make sure model_name_pattern is a regex that matches all model filenames. The (.*) capture will extract the tissue name so make sure that's in the right place.": "",
+            "smultixcan_wf.model_name_pattern": "gtex_v7_(.*)_imputed_europeans_tw_0.5_signif.db",
+2. Modify regex to parse out tissue name from S-PrediXcan output files
+
+    * S-PrediXcan output filenames will always be model filenames but ".db" is replaced with ".metaxcan_results.csv"
+
+            "## Make sure metaxcan_file_name_parse_pattern is a regex that matches all sPrediXcan output filenames.": "",
+            "## S-PrediXcan output filenames will be the model filename with '.db' replaced by 'metaxcan_results.csv'": "",
+                "smultixcan_wf.metaxcan_file_name_parse_pattern": "gtex_v7_(.*)_imputed_europeans_tw_0.5_signif.metaxcan_results.csv",
+                
+3. Set the corrected p-value threshold for filtering S-MulTiXcan significant hits
+        
+        "####################### STEP_5 INPUTS: P-VALUE CORRECTION":"",
+        "## Final filtered S-MulTiXcan results will only contain genes with p-values <= this thresholds": "",
+            "smultixcan_wf.adj_pvalue_filter_threshold" : 0.75,
 
 ## A brief summary of how to run the workflow on your data
-1. Create a new JSON input file for the pipeline by making a copy of the example template.
-2. Update the values specific to your analysis. These are ones you may have to change depending on your analysis. 
+1. Create a new JSON input file specific to your analysis. Usually just means modifying the following:
+        
         1. GWAS Input files
         2. PredictDB tissue model files
         3. pvalue filter thresholds
-3. Run the workflow using WDL either on your local machine or through Cromwell Server
-4. Monitor the job until it completes
+        
+2. Run the workflow using WDL either on your local machine or through Cromwell Server
+3. Monitor the job until it completes
 
 ## Authors
 For any questions, comments, concerns, or bugs,

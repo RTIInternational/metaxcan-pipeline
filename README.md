@@ -201,7 +201,15 @@ These steps discuss how to modify the JSON input templates when you want to run 
 
 #### A note on example workflow input templates
 The workflow input templates mentioned above are designed to give you an idea of the input files/values you'll need to set to run on your own data.
-They're well commented and broken down by section to help orient you to which inputs are used by each task. All comments and section delimiters
+They're well commented and broken down by section to help orient you to which inputs are used by each task. 
+
+All comments are entered as dummy input values starting with "##":
+
+        "## Analysis name to be appended to output files for easily keeping track of outputs": "",
+        
+Actual parameters will look like "<workflow_name>.<input_parameter>":
+
+        "spredixcan_wf.analysis_name" : "ftnd",
 
 
 #### S-PrediXcan workflow inputs

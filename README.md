@@ -58,6 +58,7 @@ For the purpose of this document, we will focus on how to run the pipeline in th
         ```
    4. Download the [Cromwell AWS config file](https://s3.amazonaws.com/rti-cromwell-output/cromwell-config/cromwell_default_genomics_queue.conf) needed to run the workflow on CODE's AWS DefaultGenomicsQueue. 
         * Keep this handy. It might be best to put the queue file in the repo you download. 
+        * File location: *s3://rti-cromwell-output/cromwell-config/cromwell_default_genomics_queue.conf*
     
         ```bash
         # Change into workflow repo dir

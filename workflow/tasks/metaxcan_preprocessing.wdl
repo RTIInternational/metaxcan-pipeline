@@ -16,7 +16,6 @@ task standardize_input_cols {
     String output_filename = basename(gxg_meta_analysis_file) + ".standardized.txt"
     String tmp_filename = "unzipped_gxg_file.txt"
     command<<<
-
         input_file=${gxg_meta_analysis_file}
 
         # Unzip file if necessary
@@ -33,6 +32,9 @@ task standardize_input_cols {
         awk -v OFS="\t" -F"\t" '{print $${id_col},$${chr_col},$${pos_col},$${a1_col},$${a2_col},$${beta_col},$${se_col},$${pvalue_col}}' \
             $input_file \
             > ${output_filename}
+
+        # Remove "chr" from beginninig of chromosome column
+        sed -i 's/chr//g' ${output_filename}
 
         # Standardize column names
         sed -i "1s/.*/MarkerName\tchr\tposition\tA1\tA2\tBETA\tStdErr\tP/" ${output_filename}

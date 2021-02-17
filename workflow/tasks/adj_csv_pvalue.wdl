@@ -11,7 +11,7 @@ task adj_csv_pvalue{
 
     # Boolean for whether input file is tab delimited (default is false to assume comma-separated)
     Boolean tab_delimited = false
-    File output_file = "${output_file_base}.p_adjusted.csv"
+    String output_file = "${output_file_base}.p_adjusted.csv"
     command {
         Rscript /opt/code_docker_lib/adjust_csv_pvalue.R --input_file ${input_file} \
             --output_file ./${output_file} \

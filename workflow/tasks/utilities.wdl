@@ -41,8 +41,8 @@ task cat_csv {
     # Cats a set of CSV files (or text files) which have headers
     # Includes one copy of header at top of concatentated file and removes header from all other files
     Array[File] input_files
-    File output_base
-    File output_file = output_base + ".csv"
+    String output_base
+    String output_file = output_base + ".csv"
     command {
         rm -rf ./csv_inputs
         mkdir ./csv_inputs

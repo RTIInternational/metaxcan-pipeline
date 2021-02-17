@@ -23,7 +23,7 @@ task add_col_to_csv {
     String colname
     String value
     String output_file_base = basename(input_file, ".csv")
-    File output_file = "${output_file_base}.col_added.csv"
+    String output_file = "${output_file_base}.col_added.csv"
     command <<<
         awk -F"," 'BEGIN {OFS = ","} FNR==1{$(NF+1)=${colname}} FNR>1{$(NF+1)="${value}";} 1' ${input_file} > ${output_file}
     >>>

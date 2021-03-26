@@ -91,7 +91,9 @@ workflow spredixcan_wf {
                 non_effect_allele_column = "non_effect_allele",
                 beta_column = "effect_size",
                 pvalue_column = "pvalue",
-                se_column = "standard_error"
+                se_column = "standard_error",
+                model_db_snp_key = "varID"
+
         }
     }
 

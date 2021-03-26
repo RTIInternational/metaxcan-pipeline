@@ -6,9 +6,19 @@ task metaxcan {
     String snp_column
     String effect_allele_column
     String non_effect_allele_column
-    String beta_column
     String pvalue_column
     String se_column
+
+    # One of these needs to set
+    String? zscore_column
+    String? beta_column
+
+    # Optionally specify snp id column in model file
+    String? model_db_snp_key
+
+    # Boolean for whether to keep non_rsid snps (should be true for gtex_v8, unnecessary for gtex_v7)
+    Boolean keep_non_rsid = true
+
     String output_base = basename(model_db_file, ".db")
     String output_file = output_base + ".metaxcan_results.csv"
 
@@ -24,14 +34,18 @@ task metaxcan {
             --model_db_path ${model_db_file} \
             --covariance ${covariance_file} \
             --gwas_folder ./gwas_dir \
-            --beta_column ${beta_column} \
             --pvalue_column ${pvalue_column} \
             --effect_allele_column ${effect_allele_column} \
             --non_effect_allele_column ${non_effect_allele_column} \
             --snp_column ${snp_column} \
             --se_column ${se_column} \
+            ${'--zscore_column ' + zscore_column} \
+            ${'--beta_column ' + beta_column} \
+            ${'--model_db_snp_key ' + model_db_snp_key} \
+            ${true='--keep_non_rsid' false='' keep_non_rsid} \
+            --additional_output \
+            --throw \
             --output_file ${output_file}
-
     }
     output {
         File metaxcan_output = output_file
@@ -109,11 +123,17 @@ task smultixcan {
     String snp_column
     String effect_allele_column
     String non_effect_allele_column
-    String beta_column
     String pvalue_column
     String se_column
     String output_base
     Float cutoff_threshold
+
+    String? beta_column
+    String? zscore_column
+
+    String? model_db_snp_key
+    Boolean keep_non_rsid = true
+
     String output_file = output_base + ".smultixcan_results.csv"
 
     command {
@@ -137,12 +157,17 @@ task smultixcan {
             --snp_covariance ${covariance_file} \
             --metaxcan_folder ./metaxcan_dir \
             --gwas_folder ./gwas_dir \
-            --beta_column ${beta_column} \
             --pvalue_column ${pvalue_column} \
             --effect_allele_column ${effect_allele_column} \
             --non_effect_allele_column ${non_effect_allele_column} \
             --snp_column ${snp_column} \
             --se_column ${se_column} \
+            ${'--zscore_column ' + zscore_column} \
+            ${'--beta_column ' + beta_column} \
+            ${'--model_db_snp_key ' + model_db_snp_key} \
+            ${true='--keep_non_rsid' false='' keep_non_rsid} \
+            --additional_output \
+            --throw \
             --verbosity 1 \
             --output ${output_file} \
             --models_name_pattern "${model_name_pattern}" \

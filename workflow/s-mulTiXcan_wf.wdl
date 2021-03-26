@@ -99,7 +99,8 @@ workflow smultixcan_wf {
             beta_column = "effect_size",
             pvalue_column = "pvalue",
             se_column = "standard_error",
-            cutoff_threshold=smultixcan_cutoff_threshold
+            cutoff_threshold=smultixcan_cutoff_threshold,
+            model_db_snp_key = "varID"
      }
 
     # Correct S-MulTiXcan gene p-values for multiple tests (Num tests = num genes)

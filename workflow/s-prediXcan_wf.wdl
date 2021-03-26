@@ -1,4 +1,4 @@
-import "metaxcan-pipeline/workflow/tasks/metaxcan_preprocessing.wdl" as PREPROCESSING
+import "metaxcan-pipeline/workflow/tasks/summary_gwas_imputation.wdl" as PREPROCESSING
 import "metaxcan-pipeline/workflow/tasks/metaxcan.wdl" as METAXCAN
 import "metaxcan-pipeline/workflow/postprocess_metaxcan_results_wf.wdl" as POSTPROCESSING
 import "metaxcan-pipeline/workflow/tasks/utilities.wdl" as UTIL
@@ -11,22 +11,30 @@ workflow spredixcan_wf {
     ########### Inputs for standardizing GWAS/Meta-analysis output files for input to metaxcan preprocessing
     # GWAS/Meta-analysis output files that will be used for S-PrediXcan
     Array[File] gwas_input_files
-    # 1-based column indices of required information columns
-    Int input_id_col
-    Int input_chr_col
-    Int input_pos_col
-    Int input_a1_col
-    Int input_a2_col
-    Int input_beta_col
-    Int input_se_col
-    Int input_pvalue_col
-
-    ########### Inputs for metaxcan preprocessing
+    Array[File] snp_ref_metadata_files
+    File? liftover_key
     Array[Int] chrs
-    # 1000g legend files used to convert GWAS/Meta-analysis snp ids to correct PredictDB ids
-    Array[File] legend_files_1000g
-    # PredictDB variant annotation file
-    File gtex_variant_file
+
+    # Names of columns to standardize from input
+    String id_colname_in
+    String pos_colname_in
+    String chr_colname_in
+    String effect_allele_colname_in
+    String non_effect_allele_colname_in
+    String effect_size_colname_in
+    String pvalue_colname_in
+
+    # Memory for gwas sumstat harmonization
+    Int harmonize_mem_gb = 6
+
+    # Whether to prepend 'chr' to chromosome names
+    Boolean chr_format_out = true
+
+    # Handle any whitespace character (tabs or spaces)
+    String sumstats_in_separator = "ANY_WHITESPACE"
+
+    # Optionally skip lines beginning with the specified character
+    String? harmonize_skip_until_header
 
     ########### Inputs for s-predixcan
     # Tissue specific PredictDB expression models used by MetaXcan to predict gene expression from genotypes
@@ -52,33 +60,22 @@ workflow spredixcan_wf {
     #   Standardizes column names for input to metaxcan_preprocessing step
     scatter (chr_index in range(length(chrs))){
         # Scatter call runs input files in parallel by chromosome
-        call PREPROCESSING.standardize_input_cols{
+        call PREPROCESSING.harmonize_sumstats{
             input:
-                gxg_meta_analysis_file = gwas_input_files[chr_index],
-                id_col = input_id_col,
-                chr_col = input_chr_col,
-                pos_col = input_pos_col,
-                a1_col = input_a1_col,
-                a2_col = input_a2_col,
-                beta_col = input_beta_col,
-                se_col = input_se_col,
-                pvalue_col = input_pvalue_col
-        }
-    }
-
-    # Transforms standardized GWAS/Meta-analysis files into s-predixcan input files
-    # Uses the PredictDB variant annotations (gtex_variant_file) and 1000g legend files to
-    #   Convert PredictDB snp_ids and GWAS/Meta-analysis snp_ids to common snp_id (1000g ids)
-    #   Subset GWAS/Meta-analysis snps to include only those present in predictDB models
-    #   Convert GWAS/Meta-analysis snp ids to PredictDB ids so GWAS scores are compatiable with PredictDB models used by MetaXcan
-    scatter (chr_index in range(length(chrs))){
-        call PREPROCESSING.preprocess_metaxcan_chr as preprocessing {
-            input:
-                gxg_meta_analysis_file = standardize_input_cols.output_file[chr_index],
-                chr = chrs[chr_index],
-                legend_file_1000g = legend_files_1000g[chr_index],
-                gtex_variant_file = gtex_variant_file,
-                output_base = "processed_metaxcan_input"
+                sumstats_in = gwas_input_files[chr_index],
+                snp_ref_metadata = snp_ref_metadata_files[chr_index],
+                liftover_key = liftover_key,
+                id_colname_in = id_colname_in,
+                pos_colname_in = pos_colname_in,
+                chr_colname_in = chr_colname_in,
+                effect_allele_colname_in = effect_allele_colname_in,
+                non_effect_allele_colname_in = non_effect_allele_colname_in,
+                effect_size_colname_in = effect_size_colname_in,
+                pvalue_colname_in = pvalue_colname_in,
+                chr_format_out = chr_format_out,
+                separator = sumstats_in_separator,
+                skip_until_header = harmonize_skip_until_header,
+                mem_gb = harmonize_mem_gb
         }
     }
 
@@ -88,13 +85,13 @@ workflow spredixcan_wf {
             input:
                 model_db_file = model_db_files[model_index],
                 covariance_file = covariance_files[model_index],
-                gwas_files = preprocessing.metaxcan_ready_output_file,
-                snp_column = "SNP",
-                effect_allele_column = "A1",
-                non_effect_allele_column = "A2",
-                beta_column = "BETA",
-                pvalue_column = "P",
-                se_column = "StdErr"
+                gwas_files = harmonize_sumstats.output_file,
+                snp_column = "panel_variant_id",
+                effect_allele_column = "effect_allele",
+                non_effect_allele_column = "non_effect_allele",
+                beta_column = "effect_size",
+                pvalue_column = "pvalue",
+                se_column = "standard_error"
         }
     }
 
@@ -115,7 +112,7 @@ workflow spredixcan_wf {
     output{
 
         # Input files used for running metaxcan
-        Array[File] metaxcan_input = preprocessing.metaxcan_ready_output_file
+        Array[File] metaxcan_input = harmonize_sumstats.output_file
 
         # Raw s-prediXcan output CSVs for each tissue tested
         Array[File] metaxcan_output = spredixcan.metaxcan_output

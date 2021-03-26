@@ -9,17 +9,32 @@ workflow smultixcan_wf {
 
     ########### Inputs for S-PrediXcan pipeline
     Array[File] gwas_input_files
-    Int input_id_col
-    Int input_chr_col
-    Int input_pos_col
-    Int input_a1_col
-    Int input_a2_col
-    Int input_beta_col
-    Int input_se_col
-    Int input_pvalue_col
+    Array[File] snp_ref_metadata_files
+    File? liftover_key
     Array[Int] chrs
-    Array[File] legend_files_1000g
-    File gtex_variant_file
+
+    # Names of columns to standardize from input
+    String id_colname_in
+    String pos_colname_in
+    String chr_colname_in
+    String effect_allele_colname_in
+    String non_effect_allele_colname_in
+    String effect_size_colname_in
+    String pvalue_colname_in
+
+    # Memory for gwas sumstat harmonization
+    Int harmonize_mem_gb = 6
+
+    # Whether to prepend 'chr' to chromosome names
+    Boolean chr_format_out = true
+
+    # Handle any whitespace character (tabs or spaces)
+    String sumstats_in_separator = "ANY_WHITESPACE"
+
+    # Optionally skip lines beginning with the specified character
+    String? harmonize_skip_until_header
+
+    ########### Inputs for s-predixcan
     Array[File] model_db_files
     Array[File] metaxcan_covariance_files
     Float adj_pvalue_filter_threshold_within_tissue
@@ -48,21 +63,24 @@ workflow smultixcan_wf {
             analysis_name = analysis_name,
             gwas_input_files = gwas_input_files,
             model_db_files = model_db_files,
-            legend_files_1000g = legend_files_1000g,
+            snp_ref_metadata_files = snp_ref_metadata_files,
+            liftover_key = liftover_key,
             covariance_files = metaxcan_covariance_files,
-            gtex_variant_file = gtex_variant_file,
             chrs = chrs,
+            id_colname_in = id_colname_in,
+            chr_colname_in = chr_colname_in,
+            pos_colname_in = pos_colname_in,
+            effect_allele_colname_in = effect_allele_colname_in,
+            non_effect_allele_colname_in = non_effect_allele_colname_in,
+            effect_size_colname_in = effect_size_colname_in,
+            pvalue_colname_in = pvalue_colname_in,
+            harmonize_mem_gb = harmonize_mem_gb,
+            chr_format_out = chr_format_out,
+            sumstats_in_separator = sumstats_in_separator,
+            harmonize_skip_until_header = harmonize_skip_until_header,
+            pvalue_adj_method = pvalue_adj_method,
             adj_pvalue_filter_threshold_within_tissue = adj_pvalue_filter_threshold_within_tissue,
             adj_pvalue_filter_threshold_across_tissue = adj_pvalue_filter_threshold_across_tissue,
-            input_id_col = input_id_col,
-            input_chr_col = input_chr_col,
-            input_pos_col = input_pos_col,
-            input_a1_col = input_a1_col,
-            input_a2_col = input_a2_col,
-            input_beta_col = input_beta_col,
-            input_se_col = input_se_col,
-            input_pvalue_col = input_pvalue_col,
-            pvalue_adj_method = pvalue_adj_method
     }
 
     # Run s-MulTiXcan on s-PrediXcan results to test for associations across multiple tissue types
@@ -75,12 +93,12 @@ workflow smultixcan_wf {
             model_name_pattern = model_name_pattern,
             metaxcan_file_name_parse_pattern = metaxcan_file_name_parse_pattern,
             output_base = smultixcan_output_basename,
-            snp_column = "SNP",
-            effect_allele_column = "A1",
-            non_effect_allele_column = "A2",
-            beta_column = "BETA",
-            pvalue_column = "P",
-            se_column = "StdErr",
+            snp_column = "panel_variant_id",
+            effect_allele_column = "effect_allele",
+            non_effect_allele_column = "non_effect_allele",
+            beta_column = "effect_size",
+            pvalue_column = "pvalue",
+            se_column = "standard_error",
             cutoff_threshold=smultixcan_cutoff_threshold
      }
 

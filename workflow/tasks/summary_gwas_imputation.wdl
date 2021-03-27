@@ -40,7 +40,7 @@ task harmonize_sumstats{
     String samplesize_arg = if (!defined(samplesize_colname_in)) then "--insert_value sample_size 1" else "-output_colname_map ${samplesize_colname_in} ${samplesize_colname_out}"
 
     # Output column orders
-    Array[String] col_order = ["variant_id", "panel_variant_id", "chromosome", "position", "effect_allele", "non_effect_allele", "pvalue", "zscore", "effect_size", "standard_error", "sample_size", "frequency"]
+    Array[String] col_order = ["variant_id", "panel_variant_id", "chromosome", "position", "effect_allele", "non_effect_allele", "pvalue", "zscore", "effect_size", "standard_error", "sample_size", "frequency", "n_cases"]
 
     # Whether to prepend 'chr' to chromosome names
     Boolean chr_format_out = true
@@ -104,6 +104,113 @@ task harmonize_sumstats{
             ${true='--enforce_numeric_columns' false='' enforce_numeric_columns} \
             ${true='--insert_value' false='' has_insert_values} ${sep=' --insert_value ' insert_values} \
             ${true='-output_colname_map' false='' has_extra_col_maps} ${sep=' -output_colname_map ' extra_col_maps}
+    >>>
+
+    output{
+        File output_file = "${output_filename}"
+    }
+
+    runtime {
+        docker: docker
+        cpu: cpu
+        memory: "${mem_gb} GB"
+        maxRetries: max_retries
+    }
+}
+
+task gwas_summary_imputation{
+
+    File sumstats_in
+    File parquet_genotype
+    File parquet_genotype_metadata
+    File? region_file
+
+    Int? window
+    String? chr
+    Float? frequency_filter
+    Float? regularization
+    Int? sub_batches
+    Int? sub_batch
+    Boolean standardize_dosages = true
+    Boolean cache_variants = false
+    Int parsimony = 7
+
+    # Output basename
+    String? user_output_filename
+    String default_output_filename = basename(basename(basename(sumstats_in, ".gz"), ".tsv"), ".txt") + ".imputed.txt.gz"
+    String output_filename = select_first([user_output_filename, default_output_filename])
+
+    String docker = "rtibiocloud/summary_gwas_imputation:commit_206dac5_e47b986"
+    Int cpu = 1
+    Int mem_gb = 6
+    Int max_retries = 3
+
+    command<<<
+        # Activate conda env
+        source activate imlabtools
+
+        python /opt/summary-gwas-imputation/src/gwas_summary_imputation.py \
+            -gwas_file ${sumstats_in} \
+            -parquet_genotype ${parquet_genotype} \
+            -parquet_genotype_metadata ${parquet_genotype_metadata} \
+            ${'-by_region_file ' + region_file} \
+            ${'-window ' + window} \
+            ${'-parsimony ' + parsimony} \
+            ${'-chromosome ' + chr} \
+            ${'-regularization ' + regularization} \
+            ${'-frequency_filter ' + frequency_filter} \
+            ${'-sub_batches ' + sub_batches} \
+            ${'-sub_batch ' + sub_batch} \
+            ${true='--standardise_dosages' false='' standardize_dosages} \
+            ${true='--cache_variants' false='' cache_variants} \
+            -output ${output_filename}
+    >>>
+
+    output{
+        File output_file = "${output_filename}"
+    }
+
+    runtime {
+        docker: docker
+        cpu: cpu
+        memory: "${mem_gb} GB"
+        maxRetries: max_retries
+    }
+}
+
+task gwas_summary_imputation_postprocess{
+
+    File sumstats_in
+    Array[File] imputed_sumstats_in
+
+    # Optoinal stuff
+    Boolean keep_all_observed
+    Int parsimony = 7
+
+    # Output basename
+    String? user_output_filename
+    String default_output_filename = basename(basename(basename(sumstats_in, ".gz"), ".tsv"), ".txt") + ".postprocessed.txt.gz"
+    String output_filename = select_first([user_output_filename, default_output_filename])
+
+    String docker = "rtibiocloud/summary_gwas_imputation:commit_206dac5_e47b986"
+    Int cpu = 1
+    Int mem_gb = 2
+    Int max_retries = 3
+
+    command<<<
+        # Activate conda env
+        source activate imlabtools
+
+        mkdir ./gwas_dir
+        cp -r ${sep=' ./gwas_dir ; cp -r ' imputed_sumstats_in} ./gwas_dir
+
+        python /opt/summary-gwas-imputation/src/gwas_summary_imputation_postprocess.py \
+            -gwas_file ${sumstats_in} \
+            -parsimony ${parsimony} \
+            -folder ./gwas_dir \
+            -pattern '.*' \
+            ${true='--keep_all_observed' false='' keep_all_observed} \
+            -output ${output_filename}
     >>>
 
     output{

@@ -22,9 +22,6 @@ workflow smultixcan_wf {
     String effect_size_colname_in
     String pvalue_colname_in
 
-    # Memory for gwas sumstat harmonization
-    Int harmonize_mem_gb = 6
-
     # Whether to prepend 'chr' to chromosome names
     Boolean chr_format_out = true
 
@@ -33,6 +30,25 @@ workflow smultixcan_wf {
 
     # Optionally skip lines beginning with the specified character
     String? harmonize_skip_until_header
+
+    ########### Inputs for imputation
+    Array[File] parquet_genotypes
+    File parquet_genotype_metadata
+    File impute_region_file
+
+    Int impute_window = 100000
+    Float impute_frequency_filter = 0.01
+    Float impute_regularization = 0.1
+    Boolean impute_standardize_dosages = true
+    Boolean impute_keep_all_observed = true
+
+    # Compute resources per chr
+    Int harmonize_cpu = 1
+    Int harmonize_mem_gb = 6
+    Int impute_cpu = 1
+    Int impute_mem_gb = 10
+    Int postprocess_cpu = 1
+    Int postprocess_mem_gb = 2
 
     ########### Inputs for s-predixcan
     Array[File] model_db_files
@@ -78,9 +94,23 @@ workflow smultixcan_wf {
             chr_format_out = chr_format_out,
             sumstats_in_separator = sumstats_in_separator,
             harmonize_skip_until_header = harmonize_skip_until_header,
+            parquet_genotypes = parquet_genotypes,
+            parquet_genotype_metadata = parquet_genotype_metadata,
+            impute_region_file = impute_region_file,
+            impute_window = impute_window,
+            impute_frequency_filter = impute_frequency_filter,
+            impute_regularization = impute_regularization,
+            impute_standardize_dosages = impute_standardize_dosages,
+            impute_keep_all_observed = impute_keep_all_observed,
             pvalue_adj_method = pvalue_adj_method,
             adj_pvalue_filter_threshold_within_tissue = adj_pvalue_filter_threshold_within_tissue,
             adj_pvalue_filter_threshold_across_tissue = adj_pvalue_filter_threshold_across_tissue,
+            harmonize_cpu = harmonize_cpu,
+            harmonize_mem_gb = harmonize_mem_gb,
+            impute_cpu = impute_cpu,
+            impute_mem_gb = impute_mem_gb,
+            postprocess_cpu = postprocess_cpu,
+            postprocess_mem_gb = postprocess_mem_gb
     }
 
     # Run s-MulTiXcan on s-PrediXcan results to test for associations across multiple tissue types
@@ -96,7 +126,7 @@ workflow smultixcan_wf {
             snp_column = "panel_variant_id",
             effect_allele_column = "effect_allele",
             non_effect_allele_column = "non_effect_allele",
-            beta_column = "effect_size",
+            zscore_column = "zscore",
             pvalue_column = "pvalue",
             se_column = "standard_error",
             cutoff_threshold=smultixcan_cutoff_threshold,

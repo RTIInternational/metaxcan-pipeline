@@ -24,9 +24,6 @@ workflow spredixcan_wf {
     String effect_size_colname_in
     String pvalue_colname_in
 
-    # Memory for gwas sumstat harmonization
-    Int harmonize_mem_gb = 6
-
     # Whether to prepend 'chr' to chromosome names
     Boolean chr_format_out = true
 
@@ -35,6 +32,25 @@ workflow spredixcan_wf {
 
     # Optionally skip lines beginning with the specified character
     String? harmonize_skip_until_header
+
+    ########### Inputs for imputation
+    Array[File] parquet_genotypes
+    File parquet_genotype_metadata
+    File impute_region_file
+
+    Int impute_window = 100000
+    Float impute_frequency_filter = 0.01
+    Float impute_regularization = 0.1
+    Boolean impute_standardize_dosages = true
+    Boolean impute_keep_all_observed = true
+
+    # Compute resources per chr
+    Int harmonize_cpu = 1
+    Int harmonize_mem_gb = 6
+    Int impute_cpu = 1
+    Int impute_mem_gb = 10
+    Int postprocess_cpu = 1
+    Int postprocess_mem_gb = 2
 
     ########### Inputs for s-predixcan
     # Tissue specific PredictDB expression models used by MetaXcan to predict gene expression from genotypes
@@ -75,7 +91,34 @@ workflow spredixcan_wf {
                 chr_format_out = chr_format_out,
                 separator = sumstats_in_separator,
                 skip_until_header = harmonize_skip_until_header,
+                cpu = harmonize_cpu,
                 mem_gb = harmonize_mem_gb
+        }
+
+        # Impute summary statistics
+        call PREPROCESSING.gwas_summary_imputation{
+            input:
+                sumstats_in = harmonize_sumstats.output_file,
+                parquet_genotype = parquet_genotypes[chr_index],
+                parquet_genotype_metadata = parquet_genotype_metadata,
+                region_file = impute_region_file,
+                window = impute_window,
+                chr = chrs[chr_index],
+                frequency_filter = impute_frequency_filter,
+                regularization = impute_regularization,
+                standardize_dosages = impute_standardize_dosages,
+                cpu = impute_cpu,
+                mem_gb = impute_mem_gb
+        }
+
+        # Postprocess imputed file
+        call PREPROCESSING.gwas_summary_imputation_postprocess{
+            input:
+                sumstats_in = harmonize_sumstats.output_file,
+                imputed_sumstats_in = [gwas_summary_imputation.output_file],
+                keep_all_observed = impute_keep_all_observed,
+                cpu = postprocess_cpu,
+                mem_gb = postprocess_mem_gb
         }
     }
 
@@ -85,11 +128,11 @@ workflow spredixcan_wf {
             input:
                 model_db_file = model_db_files[model_index],
                 covariance_file = covariance_files[model_index],
-                gwas_files = harmonize_sumstats.output_file,
+                gwas_files = gwas_summary_imputation_postprocess.output_file,
                 snp_column = "panel_variant_id",
                 effect_allele_column = "effect_allele",
                 non_effect_allele_column = "non_effect_allele",
-                beta_column = "effect_size",
+                zscore_column = "zscore",
                 pvalue_column = "pvalue",
                 se_column = "standard_error",
                 model_db_snp_key = "varID"
@@ -114,7 +157,7 @@ workflow spredixcan_wf {
     output{
 
         # Input files used for running metaxcan
-        Array[File] metaxcan_input = harmonize_sumstats.output_file
+        Array[File] metaxcan_input = gwas_summary_imputation_postprocess.output_file
 
         # Raw s-prediXcan output CSVs for each tissue tested
         Array[File] metaxcan_output = spredixcan.metaxcan_output
